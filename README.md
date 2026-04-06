@@ -13,7 +13,7 @@ Changes were made to the following files using Claude.AI :
 
 
 
-#[Original Public-Pool README.md continues below]
+# [Original Public-Pool README.md continues below]
 
 A Nestjs and Typescript Bitcoin stratum mining server.
 
