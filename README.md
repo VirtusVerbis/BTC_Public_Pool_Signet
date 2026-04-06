@@ -1,6 +1,6 @@
 ## Description
 
-This is a fork of Benjamin Wilon's original Public-Pool source code to allow Signet support.
+This is a fork of Benjamin Wilson's original Public-Pool source code to allow Signet support.
 Original Found at:  https://github.com/benjamin-wilson/public-pool
 
 Changes were made to the following files using Claude.AI :
