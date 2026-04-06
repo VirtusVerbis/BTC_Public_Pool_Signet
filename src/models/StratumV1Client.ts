@@ -42,7 +42,10 @@ export class StratumV1Client {
     private statistics: StratumV1ClientStatistics;
     private stratumInitialized = false;
     private usedSuggestedDifficulty = false;
-    private sessionDifficulty: number = 16384;
+    //private sessionDifficulty: number = 16384;
+	private sessionDifficulty: number = 0.00001;
+	//private sessionDifficulty: number = 0.000000001;
+	//private sessionDifficulty: number = 0.0000000001;  //works really good, too many shares
 
     private entity: ClientEntity;
     private creatingEntity: Promise<void>;
@@ -113,7 +116,7 @@ export class StratumV1Client {
 
 
     private async handleMessage(message: string) {
-        //console.log(`Received from ${this.extraNonceAndSessionId}`, message);
+        console.log(`\n>>>>>>>  Received from ${this.extraNonceAndSessionId}\n`, message);
 
         // Parse the message and check if it's the initial subscription message
         let parsedMessage = null;
@@ -308,7 +311,10 @@ export class StratumV1Client {
                 const errors = await validate(miningSubmitMessage, validatorOptions);
 
                 if (errors.length === 0 && this.stratumInitialized == true) {
-                    const result = await this.handleMiningSubmission(miningSubmitMessage);
+                    //const result = await this.handleMiningSubmission(miningSubmitMessage);
+					console.log('Processing share submission...');
+					const result = await this.handleMiningSubmission(miningSubmitMessage);
+					console.log('Share submission result:', result);
                     if (result == true) {
                         const success = await this.write(JSON.stringify(miningSubmitMessage.response()) + '\n');
                         if (!success) {
@@ -318,6 +324,8 @@ export class StratumV1Client {
 
 
                 } else {
+					console.log('Submit validation errors:', JSON.stringify(errors));
+                    console.log('stratumInitialized:', this.stratumInitialized);
                     console.log('Mining Submit validation error');
                     const err = new StratumErrorMessage(
                         miningSubmitMessage.id,
@@ -360,8 +368,9 @@ export class StratumV1Client {
         }
 
         if (this.clientSuggestedDifficulty == null) {
-            //console.log(`Setting difficulty to ${this.sessionDifficulty}`)
+            console.log(`Setting difficulty to ${this.sessionDifficulty}`)
             const setDifficulty = JSON.stringify(new SuggestDifficulty().response(this.sessionDifficulty));
+			console.log(`Sending set_difficulty to miner:`, setDifficulty);
             const success = await this.write(setDifficulty + '\n');
             if (!success) {
                 return;
@@ -419,6 +428,8 @@ export class StratumV1Client {
             network = bitcoinjs.networks.testnet;
         } else if (networkConfig === 'regtest') {
             network = bitcoinjs.networks.regtest;
+	} else if (networkConfig === 'signet') {
+            network = bitcoinjs.networks.testnet;
         } else {
             throw new Error('Invalid network configuration');
         }
@@ -433,14 +444,16 @@ export class StratumV1Client {
 
         this.stratumV1JobsService.addJob(job);
 
-
-        const success = await this.write(job.response(jobTemplate));
+		const jobResponse = job.response(jobTemplate);
+		//console.log('Sending job to miner:', jobResponse);
+		const success = await this.write(jobResponse);
+        //const success = await this.write(job.response(jobTemplate));
         if (!success) {
             return;
         }
 
 
-        //console.log(`Sent new job to ${this.clientAuthorization.worker}.${this.extraNonceAndSessionId}. (clearJobs: ${jobTemplate.blockData.clearJobs}, fee?: ${!this.noFee})`)
+        console.log(`Sent new job to ${this.clientAuthorization.worker}.${this.extraNonceAndSessionId}. (clearJobs: ${jobTemplate.blockData.clearJobs}, fee?: ${!this.noFee})`)
 
     }
 
@@ -514,7 +527,7 @@ export class StratumV1Client {
         const header = updatedJobBlock.toBuffer(true);
         const { submissionDifficulty } = DifficultyUtils.calculateDifficulty(header);
 
-        //console.log(`DIFF: ${submissionDifficulty} of ${this.sessionDifficulty} from ${this.clientAuthorization.worker + '.' + this.extraNonceAndSessionId}`);
+        console.log(`DIFF: ${submissionDifficulty} of ${this.sessionDifficulty} from ${this.clientAuthorization.worker + '.' + this.extraNonceAndSessionId}`);
 
 
         if (submissionDifficulty >= this.sessionDifficulty) {

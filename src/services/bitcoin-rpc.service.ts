@@ -140,7 +140,7 @@ export class BitcoinRpcService implements OnModuleInit {
         while (blockTemplate == null) {
             blockTemplate = await this.client.getblocktemplate({
                 template_request: {
-                    rules: ['segwit'],
+                    rules: ['segwit', 'signet'],
                     mode: 'template',
                     capabilities: ['serverlist', 'proposal']
                 }

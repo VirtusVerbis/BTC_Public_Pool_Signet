@@ -1,5 +1,20 @@
 ## Description
 
+This is a fork of Benjamin Wilon's original Public-Pool source code to allow Signet support.
+Original Found at:  https://github.com/benjamin-wilson/public-pool
+
+Changes were made to the following files using Claude.AI :
+
+File												Fix
+--------------------------------------------------------------------------------------------------------
+src/models/StratumV1Client.ts						Signet network case + session difficulty + logging
+src/models/validators/bitcoin-address.validator.ts	Signet address validation
+src/services/bitcoin-rpc.service.ts					Signet getblocktemplate rules
+
+
+
+[Original Public-Pool README.md continues below]
+
 A Nestjs and Typescript Bitcoin stratum mining server.
 
 ## Installation
